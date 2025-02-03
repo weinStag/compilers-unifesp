@@ -26,7 +26,7 @@ void closeLexer(Lexer *lexer)
 }
 
 // Avança para o próximo caractere no arquivo
-void advance(Lexer *lexer)
+void advance_lexer(Lexer *lexer)
 {
     if (lexer->currentChar == '\n')
     {
@@ -53,7 +53,7 @@ Token getNextToken(Lexer *lexer, DFA *dfa)
     // Ignorar espaços em branco e novas linhas
     while (lexer->currentChar != EOF && isspace(lexer->currentChar))
     {
-        advance(lexer);
+        advance_lexer(lexer);
     }
 
     if (lexer->currentChar == EOF)
@@ -90,7 +90,7 @@ Token getNextToken(Lexer *lexer, DFA *dfa)
         lexeme[lexemeLen] = '\0'; // Null-terminate the string
 
         state = next;
-        advance(lexer);
+        advance_lexer(lexer);
     }
 
     if (dfa->finalStates[state] != -1)

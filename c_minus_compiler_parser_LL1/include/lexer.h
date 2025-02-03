@@ -24,7 +24,7 @@ typedef struct {
 // Function declarations
 void initLexer(Lexer *lexer, const char *filename);
 void closeLexer(Lexer *lexer);
-void advance(Lexer *lexer);
+void advance_lexer(Lexer *lexer);
 Token getNextToken(Lexer *lexer, DFA *dfa);  // Using DFA here
 
 #endif

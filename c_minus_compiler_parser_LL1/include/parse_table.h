@@ -3,18 +3,18 @@
 
 #include "grammar.h"
 
-#define NONTERMINAL_COUNT 25  // Número de não terminais (ajuste conforme necessário)
-#define TOKEN_COUNT 26        // Número de tokens reconhecidos
+#define NONTERMINAL_COUNT 40  // Updated based on refactored grammar
+#define TOKEN_COUNT 26        // Number of recognized tokens
 
-// Definição da entrada da tabela LL(1)
+// Structure for the LL(1) parse table entry
 typedef struct {
-    int productionRule;  // Índice da regra de produção na gramática
+    int productionRule;  // Index of the production rule in the grammar
 } ParseTableEntry;
 
-// Matriz da tabela de parsing
+// LL(1) Parse Table Declaration
 extern ParseTableEntry parseTable[NONTERMINAL_COUNT][TOKEN_COUNT];
 
-// Inicializa a tabela de parsing LL(1)
+// Function to initialize the LL(1) parse table
 void initializeParseTable();
 
 #endif // PARSE_TABLE_H

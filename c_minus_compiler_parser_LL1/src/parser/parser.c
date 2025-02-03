@@ -3,101 +3,115 @@
 #include <string.h>
 #include "../../include/parser.h"
 #include "../../include/parse_table.h"
-#include "../../include/grammar.h" // Include grammar.h for grammar_rules and grammar_rule_sizes
+#include "../../include/grammar.h"
 
-// Pilha para a análise sintática LL(1)
 #define MAX_STACK_SIZE 1000
 static int stack[MAX_STACK_SIZE];
 static int top = -1;
-
-// Token atual
 static Token current_token;
 static int error_count = 0;
+static int last_nonterminal = -1;
+static int last_rule_applied = -1;
+static TokenType last_token_type = -1;
+static int stagnation_count = 0;
+#define MAX_STAGNATION 3 // Prevent infinite loop by limiting stagnation
 
-// Protótipos das funções auxiliares
 void push(int symbol);
 int pop();
 int top_of_stack();
-void synchronize(Lexer *lexer, DFA *dfa);          // Add DFA *dfa argument
-const char *token_expected_string(TokenType type); // Update to const char *
+void synchronize(Lexer *lexer, DFA *dfa);
+const char *token_expected_string(TokenType type);
 
-// Avança para o próximo token
-void advance(Lexer *lexer, DFA *dfa)
-{                                                            // Add DFA *dfa argument
-    current_token = getNextToken(lexer, dfa);                // Pass both lexer and dfa
-    printf("Advanced to token: %s\n", current_token.lexeme); // Debug print
+void advance(Lexer *lexer, DFA *dfa) {
+    current_token = getNextToken(lexer, dfa);
+    printf("Advanced to token: %s (%d)\n", current_token.lexeme, current_token.type);
 }
 
-// Verifica se o token atual corresponde ao esperado
-void match(Lexer *lexer, DFA *dfa, TokenType expected)
-{ // Add DFA *dfa argument
-    if (current_token.type == expected)
-    {
+void match(Lexer *lexer, DFA *dfa, TokenType expected) {
+    if (current_token.type == expected) {
         advance(lexer, dfa);
-    }
-    else
-    {
+    } else {
         syntax_error(current_token);
-        synchronize(lexer, dfa); // Add DFA *dfa argument
+        synchronize(lexer, dfa);
     }
 }
 
-// Inicia o parser usando a pilha
-ASTNode *parse(Lexer *lexer, DFA *dfa)
-{ // Add DFA *dfa argument
+ASTNode *parse(Lexer *lexer, DFA *dfa) {
     push(NT_PROGRAM);
     advance(lexer, dfa);
 
-    while (top >= 0)
-    {
+    while (top >= 0) {
         int X = pop();
-        printf("Processing symbol: %d\n", X); // Debug print
-
-        if (X >= TOKEN_INT && X <= TOKEN_EOF)
-        { // Se for terminal
-            if (X == current_token.type)
-            {
-                advance(lexer, dfa);
-            }
-            else
-            {
-                syntax_error(current_token);
-                synchronize(lexer, dfa); // Add DFA *dfa argument
-            }
+        
+        printf("Stack state: ");
+        for (int i = 0; i <= top; i++) {
+            printf("%d ", stack[i]);
         }
-        else
-        { // Se for não terminal
+        printf("\nProcessing symbol: %d\n", X);
+
+        if (X >= TOKEN_INT && X <= TOKEN_EOF) {
+            if (X == current_token.type) {
+                advance(lexer, dfa);
+                stagnation_count = 0; // Reset stagnation count on progress
+            } else {
+                syntax_error(current_token);
+                synchronize(lexer, dfa);
+            }
+        } else {
+            printf("Current Token: %d (%s)\n", current_token.type, current_token.lexeme);
+            if (current_token.type == TOKEN_EOF) {
+                printf("✅ Reached EOF, stopping parsing.\n");
+                break;
+            }
+            
             int rule = parseTable[X][current_token.type].productionRule;
 
-            
-            
-            if (rule == -1)
-            {
+            if (rule == -1) {
+                printf("🚨 No rule found for symbol %d with token %d\n", X, current_token.type);
                 syntax_error(current_token);
-                synchronize(lexer, dfa); // Add DFA *dfa argument
-            }
-            else
-            {
+                synchronize(lexer, dfa);
+            } else {
+                if (X == last_nonterminal && rule == last_rule_applied && current_token.type == last_token_type) {
+                    stagnation_count++;
+                    printf("⚠️ Potential infinite loop detected! Stagnation count: %d\n", stagnation_count);
+                    if (stagnation_count >= MAX_STAGNATION) {
+                        printf("🚨 Stagnation limit reached. Forcing parse exit.\n");
+                        break; // Stop parsing if stuck
+                    }
+                } else {
+                    stagnation_count = 0;
+                }
+                
+                last_nonterminal = X;
+                last_rule_applied = rule;
+                last_token_type = current_token.type;
+                
+                printf("✅ Applying rule %d for symbol %d\n", rule, X);
                 const int *production = grammar_rules[rule];
                 int production_size = grammar_rule_sizes[rule];
-                for (int i = production_size - 1; i >= 0; i--)
-                {
-                    if (production[i] != -1)
-                    { // -1 indica produção vazia (ε)
+
+                if (production_size == 1 && production[0] == NT_EMPTY) {
+                    printf("⚠️ Empty production for symbol %d, skipping push.\n", X);
+                    continue;
+                }
+                
+                printf("🔁 Pushing symbols onto stack: ");
+                for (int i = production_size - 1; i >= 0; i--) {
+                    if (production[i] != -1) {
+                        printf("%d ", production[i]);
                         push(production[i]);
                     }
                 }
+                printf("\n");
             }
         }
     }
 
-    if (error_count > 0)
-    {
-        printf("Parsing finalizado com %d erro(s).\n", error_count);
+    if (error_count > 0) {
+        printf("Parsing finished with %d error(s).\n", error_count);
         return NULL;
     }
 
-    // Create a dummy AST node for demonstration purposes
     ASTNode *root = (ASTNode *)malloc(sizeof(ASTNode));
     root->name = strdup("Program");
     root->num_children = 0;
@@ -106,15 +120,9 @@ ASTNode *parse(Lexer *lexer, DFA *dfa)
     return root;
 }
 
-// Função para liberar a memória da AST
-void free_ast(ASTNode *node)
-{
-    if (node == NULL)
-    {
-        return;
-    }
-    for (int i = 0; i < node->num_children; ++i)
-    {
+void free_ast(ASTNode *node) {
+    if (node == NULL) return;
+    for (int i = 0; i < node->num_children; ++i) {
         free_ast(node->children[i]);
     }
     free(node->children);
@@ -122,115 +130,63 @@ void free_ast(ASTNode *node)
     free(node);
 }
 
-// Empilha um símbolo na pilha
-void push(int symbol)
-{
-    if (top < MAX_STACK_SIZE - 1)
-    {
+void push(int symbol) {
+    if (top < MAX_STACK_SIZE - 1) {
         stack[++top] = symbol;
-    }
-    else
-    {
-        fprintf(stderr, "Erro: Pilha do parser cheia.\n");
+    } else {
+        fprintf(stderr, "Error: Parser stack overflow.\n");
         exit(EXIT_FAILURE);
     }
 }
 
-// Desempilha um símbolo da pilha
-int pop()
-{
-    if (top >= 0)
-    {
-        //print the stack
-        printf("Stack: ");
-        for (int i = 0; i <= top; i++)
-        {
-            printf("%d ", stack[i]);
-        }
+int pop() {
+    if (top >= 0) {
         return stack[top--];
-    }
-    else
-    {
-        fprintf(stderr, "Erro: Pilha do parser vazia.\n");
+    } else {
+        fprintf(stderr, "Error: Parser stack underflow.\n");
         exit(EXIT_FAILURE);
     }
 }
 
-// Obtém o topo da pilha sem remover
-int top_of_stack()
-{
-    if (top >= 0)
-    {
-        return stack[top];
-    }
-    else
-    {
-        fprintf(stderr, "Erro: Pilha do parser vazia.\n");
-        exit(EXIT_FAILURE);
-    }
-}
-
-// Função para imprimir erro sintático e registrar erro
-void syntax_error(Token token)
-{
+void syntax_error(Token token) {
     error_count++;
-    printf("ERRO SINTATICO: \"%s\" INVALIDO [linha: %d], COLUNA %d. Esperado: %s\n",
-           token.lexeme, token.line, token.column, // Use lexeme instead of value
+    printf("Syntax Error: \"%s\" invalid [line: %d, column: %d]. Expected: %s\n",
+           token.lexeme, token.line, token.column,
            token_expected_string(token.type));
 }
 
-// Função de sincronização para recuperação de erro
-void synchronize(Lexer *lexer, DFA *dfa)
-{ // Add DFA *dfa argument
-    while (current_token.type != TOKEN_SEMICOLON && current_token.type != TOKEN_EOF)
-    {
+void synchronize(Lexer *lexer, DFA *dfa) {
+    printf("Synchronizing...\n");
+    while (current_token.type != TOKEN_SEMICOLON && current_token.type != TOKEN_EOF) {
+        printf("Skipping token: %s\n", current_token.lexeme);
         advance(lexer, dfa);
     }
-    advance(lexer, dfa); // Avança para o próximo token válido
+    advance(lexer, dfa);
 }
 
-// Função para exibir a árvore sintática
-void print_ast(ASTNode *node, int level)
-{
-    if (node == NULL)
-    {
-        return;
-    }
-    for (int i = 0; i < level; ++i)
-    {
-        printf("  "); // Indentação para representar a profundidade na árvore
+
+void print_ast(ASTNode *node, int level) {
+    if (node == NULL) return;
+    for (int i = 0; i < level; ++i) {
+        printf("  ");
     }
     printf("%s\n", node->name);
-    for (int i = 0; i < node->num_children; ++i)
-    {
+    for (int i = 0; i < node->num_children; ++i) {
         print_ast(node->children[i], level + 1);
     }
 }
 
-// Função auxiliar para obter uma string do nome do token esperado
-const char *token_expected_string(TokenType type)
-{ // Ensure return type matches declaration
-    switch (type)
-    {
-    case TOKEN_INT:
-        return "INT";
-    case TOKEN_IF:
-        return "IF";
-    case TOKEN_ELSE:
-        return "ELSE";
-    case TOKEN_WHILE:
-        return "WHILE";
-    case TOKEN_RETURN:
-        return "RETURN";
-    case TOKEN_ID:
-        return "IDENTIFICADOR";
-    case TOKEN_NUM:
-        return "NUMERO";
-    case TOKEN_SEMICOLON:
-        return "PONTO E VÍRGULA";
-    case TOKEN_EOF:
-        return "FIM DO ARQUIVO";
-    default:
-        return "TOKEN DESCONHECIDO";
+const char *token_expected_string(TokenType type) {
+    switch (type) {
+    case TOKEN_INT: return "INT";
+    case TOKEN_IF: return "IF";
+    case TOKEN_ELSE: return "ELSE";
+    case TOKEN_WHILE: return "WHILE";
+    case TOKEN_RETURN: return "RETURN";
+    case TOKEN_ID: return "IDENTIFIER";
+    case TOKEN_NUM: return "NUMBER";
+    case TOKEN_SEMICOLON: return "SEMICOLON";
+    case TOKEN_EOF: return "EOF";
+    default: return "UNKNOWN TOKEN";
     }
 }

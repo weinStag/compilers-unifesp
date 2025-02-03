@@ -1,17 +1,15 @@
 #include "../../include/grammar.h"
 
-// Define the grammar rules based on the updated grammar
+// Define the updated grammar rules based on the refactored grammar
 const int rule1[] = {NT_DECLARATION_LIST};
 const int rule2[] = {NT_DECLARATION, NT_DECLARATION_LIST_PRIME};
-const int rule3[] = {NT_EMPTY}; // Empty rule for epsilon
-
+const int rule3[] = {NT_EMPTY};
 const int rule4[] = {NT_VAR_DECLARATION};
 const int rule5[] = {NT_FUN_DECLARATION};
 const int rule6[] = {NT_TYPE_SPECIFIER, TOKEN_ID, TOKEN_SEMICOLON};
 const int rule7[] = {NT_TYPE_SPECIFIER, TOKEN_ID, TOKEN_LBRACKET, TOKEN_NUM, TOKEN_RBRACKET, TOKEN_SEMICOLON};
 const int rule8[] = {TOKEN_INT};
 const int rule9[] = {TOKEN_VOID};
-
 const int rule10[] = {NT_TYPE_SPECIFIER, TOKEN_ID, TOKEN_LPAREN, NT_PARAMS, TOKEN_RPAREN, NT_COMPOUND_STMT};
 const int rule11[] = {NT_PARAM_LIST};
 const int rule12[] = {TOKEN_VOID};
@@ -20,7 +18,6 @@ const int rule14[] = {TOKEN_COMMA, NT_PARAM, NT_PARAM_LIST_PRIME};
 const int rule15[] = {NT_EMPTY};
 const int rule16[] = {NT_TYPE_SPECIFIER, TOKEN_ID};
 const int rule17[] = {NT_TYPE_SPECIFIER, TOKEN_ID, TOKEN_LBRACKET, TOKEN_RBRACKET};
-
 const int rule18[] = {TOKEN_LBRACE, NT_LOCAL_DECLARATIONS, NT_STATEMENT_LIST, TOKEN_RBRACE};
 const int rule19[] = {NT_VAR_DECLARATION, NT_LOCAL_DECLARATIONS_PRIME};
 const int rule20[] = {NT_EMPTY};
@@ -31,7 +28,6 @@ const int rule24[] = {NT_COMPOUND_STMT};
 const int rule25[] = {NT_SELECTION_STMT};
 const int rule26[] = {NT_ITERATION_STMT};
 const int rule27[] = {NT_RETURN_STMT};
-
 const int rule28[] = {NT_EXPRESSION, TOKEN_SEMICOLON};
 const int rule29[] = {TOKEN_SEMICOLON};
 const int rule30[] = {TOKEN_IF, TOKEN_LPAREN, NT_EXPRESSION, TOKEN_RPAREN, NT_STATEMENT, NT_SELECTION_STMT_PRIME};
@@ -41,8 +37,7 @@ const int rule33[] = {TOKEN_WHILE, TOKEN_LPAREN, NT_EXPRESSION, TOKEN_RPAREN, NT
 const int rule34[] = {TOKEN_RETURN, NT_RETURN_STMT_PRIME};
 const int rule35[] = {NT_EXPRESSION, TOKEN_SEMICOLON};
 const int rule36[] = {TOKEN_SEMICOLON};
-
-const int rule37[] = {NT_VAR, TOKEN_ASSIGN, NT_EXPRESSION};
+const int rule37[] = {NT_VAR, NT_ASSIGN_EXPR};
 const int rule38[] = {NT_SIMPLE_EXPRESSION};
 const int rule39[] = {TOKEN_ID, NT_VAR_PRIME};
 const int rule40[] = {TOKEN_LBRACKET, NT_EXPRESSION, TOKEN_RBRACKET};
@@ -56,7 +51,6 @@ const int rule47[] = {TOKEN_GT};
 const int rule48[] = {TOKEN_GTE};
 const int rule49[] = {TOKEN_EQ};
 const int rule50[] = {TOKEN_NEQ};
-
 const int rule51[] = {NT_TERM, NT_ADDITIVE_EXPRESSION_PRIME};
 const int rule52[] = {NT_ADDOP, NT_TERM, NT_ADDITIVE_EXPRESSION_PRIME};
 const int rule53[] = {NT_EMPTY};
@@ -101,64 +95,64 @@ const int grammar_rule_sizes[] = {
     sizeof(rule8) / sizeof(rule8[0]),
     sizeof(rule9) / sizeof(rule9[0]),
     sizeof(rule10) / sizeof(rule10[0]),
-    sizeof(rule11) / sizeof(rule11[0]),
-    sizeof(rule12) / sizeof(rule12[0]),
-    sizeof(rule13) / sizeof(rule13[0]),
-    sizeof(rule14) / sizeof(rule14[0]),
-    sizeof(rule15) / sizeof(rule15[0]),
-    sizeof(rule16) / sizeof(rule16[0]),
-    sizeof(rule17) / sizeof(rule17[0]),
-    sizeof(rule18) / sizeof(rule18[0]),
-    sizeof(rule19) / sizeof(rule19[0]),
-    sizeof(rule20) / sizeof(rule20[0]),
-    sizeof(rule21) / sizeof(rule21[0]),
-    sizeof(rule22) / sizeof(rule22[0]),
-    sizeof(rule23) / sizeof(rule23[0]),
-    sizeof(rule24) / sizeof(rule24[0]),
-    sizeof(rule25) / sizeof(rule25[0]),
-    sizeof(rule26) / sizeof(rule26[0]),
-    sizeof(rule27) / sizeof(rule27[0]),
-    sizeof(rule28) / sizeof(rule28[0]),
-    sizeof(rule29) / sizeof(rule29[0]),
-    sizeof(rule30) / sizeof(rule30[0]),
-    sizeof(rule31) / sizeof(rule31[0]),
-    sizeof(rule32) / sizeof(rule32[0]),
-    sizeof(rule33) / sizeof(rule33[0]),
-    sizeof(rule34) / sizeof(rule34[0]),
-    sizeof(rule35) / sizeof(rule35[0]),
-    sizeof(rule36) / sizeof(rule36[0]),
-    sizeof(rule37) / sizeof(rule37[0]),
-    sizeof(rule38) / sizeof(rule38[0]),
-    sizeof(rule39) / sizeof(rule39[0]),
-    sizeof(rule40) / sizeof(rule40[0]),
-    sizeof(rule41) / sizeof(rule41[0]),
-    sizeof(rule42) / sizeof(rule42[0]),
-    sizeof(rule43) / sizeof(rule43[0]),
-    sizeof(rule44) / sizeof(rule44[0]),
-    sizeof(rule45) / sizeof(rule45[0]),
-    sizeof(rule46) / sizeof(rule46[0]),
-    sizeof(rule47) / sizeof(rule47[0]),
-    sizeof(rule48) / sizeof(rule48[0]),
-    sizeof(rule49) / sizeof(rule49[0]),
-    sizeof(rule50) / sizeof(rule50[0]),
-    sizeof(rule51) / sizeof(rule51[0]),
-    sizeof(rule52) / sizeof(rule52[0]),
-    sizeof(rule53) / sizeof(rule53[0]),
-    sizeof(rule54) / sizeof(rule54[0]),
-    sizeof(rule55) / sizeof(rule55[0]),
-    sizeof(rule56) / sizeof(rule56[0]),
-    sizeof(rule57) / sizeof(rule57[0]),
-    sizeof(rule58) / sizeof(rule58[0]),
-    sizeof(rule59) / sizeof(rule59[0]),
-    sizeof(rule60) / sizeof(rule60[0]),
-    sizeof(rule61) / sizeof(rule61[0]),
-    sizeof(rule62) / sizeof(rule62[0]),
-    sizeof(rule63) / sizeof(rule63[0]),
-    sizeof(rule64) / sizeof(rule64[0]),
-    sizeof(rule65) / sizeof(rule65[0]),
-    sizeof(rule66) / sizeof(rule66[0]),
-    sizeof(rule67) / sizeof(rule67[0]),
-    sizeof(rule68) / sizeof(rule68[0]),
-    sizeof(rule69) / sizeof(rule69[0]),
-    sizeof(rule70) / sizeof(rule70[0])
+    // sizeof(rule11) / sizeof(rule11[0]),
+    // sizeof(rule12) / sizeof(rule12[0]),
+    // sizeof(rule13) / sizeof(rule13[0]),
+    // sizeof(rule14) / sizeof(rule14[0]),
+    // sizeof(rule15) / sizeof(rule15[0]),
+    // sizeof(rule16) / sizeof(rule16[0]),
+    // sizeof(rule17) / sizeof(rule17[0]),
+    // sizeof(rule18) / sizeof(rule18[0]),
+    // sizeof(rule19) / sizeof(rule19[0]),
+    // sizeof(rule20) / sizeof(rule20[0]),
+    // sizeof(rule21) / sizeof(rule21[0]),
+    // sizeof(rule22) / sizeof(rule22[0]),
+    // sizeof(rule23) / sizeof(rule23[0]),
+    // sizeof(rule24) / sizeof(rule24[0]),
+    // sizeof(rule25) / sizeof(rule25[0]),
+    // sizeof(rule26) / sizeof(rule26[0]),
+    // sizeof(rule27) / sizeof(rule27[0]),
+    // sizeof(rule28) / sizeof(rule28[0]),
+    // sizeof(rule29) / sizeof(rule29[0]),
+    // sizeof(rule30) / sizeof(rule30[0]),
+    // sizeof(rule31) / sizeof(rule31[0]),
+    // sizeof(rule32) / sizeof(rule32[0]),
+    // sizeof(rule33) / sizeof(rule33[0]),
+    // sizeof(rule34) / sizeof(rule34[0]),
+    // sizeof(rule35) / sizeof(rule35[0]),
+    // sizeof(rule36) / sizeof(rule36[0]),
+    // sizeof(rule37) / sizeof(rule37[0]),
+    // sizeof(rule38) / sizeof(rule38[0]),
+    // sizeof(rule39) / sizeof(rule39[0]),
+    // sizeof(rule40) / sizeof(rule40[0]),
+    // sizeof(rule41) / sizeof(rule41[0]),
+    // sizeof(rule42) / sizeof(rule42[0]),
+    // sizeof(rule43) / sizeof(rule43[0]),
+    // sizeof(rule44) / sizeof(rule44[0]),
+    // sizeof(rule45) / sizeof(rule45[0]),
+    // sizeof(rule46) / sizeof(rule46[0]),
+    // sizeof(rule47) / sizeof(rule47[0]),
+    // sizeof(rule48) / sizeof(rule48[0]),
+    // sizeof(rule49) / sizeof(rule49[0]),
+    // sizeof(rule50) / sizeof(rule50[0]),
+    // sizeof(rule51) / sizeof(rule51[0]),
+    // sizeof(rule52) / sizeof(rule52[0]),
+    // sizeof(rule53) / sizeof(rule53[0]),
+    // sizeof(rule54) / sizeof(rule54[0]),
+    // sizeof(rule55) / sizeof(rule55[0]),
+    // sizeof(rule56) / sizeof(rule56[0]),
+    // sizeof(rule57) / sizeof(rule57[0]),
+    // sizeof(rule58) / sizeof(rule58[0]),
+    // sizeof(rule59) / sizeof(rule59[0]),
+    // sizeof(rule60) / sizeof(rule60[0]),
+    // sizeof(rule61) / sizeof(rule61[0]),
+    // sizeof(rule62) / sizeof(rule62[0]),
+    // sizeof(rule63) / sizeof(rule63[0]),
+    // sizeof(rule64) / sizeof(rule64[0]),
+    // sizeof(rule65) / sizeof(rule65[0]),
+    // sizeof(rule66) / sizeof(rule66[0]),
+    // sizeof(rule67) / sizeof(rule67[0]),
+    // sizeof(rule68) / sizeof(rule68[0]),
+    // sizeof(rule69) / sizeof(rule69[0]),
+    // sizeof(rule70) / sizeof(rule70[0])
 };

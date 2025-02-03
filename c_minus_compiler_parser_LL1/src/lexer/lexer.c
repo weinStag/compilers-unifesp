@@ -40,6 +40,23 @@ void advance_lexer(Lexer *lexer)
     lexer->currentChar = fgetc(lexer->file);
 }
 
+TokenType checkReservedWord(const char *lexeme)
+{
+    if (strcmp(lexeme, "int") == 0)
+        return TOKEN_INT;
+    if (strcmp(lexeme, "if") == 0)
+        return TOKEN_IF;
+    if (strcmp(lexeme, "else") == 0)
+        return TOKEN_ELSE;
+    if (strcmp(lexeme, "return") == 0)
+        return TOKEN_RETURN;
+    if (strcmp(lexeme, "while") == 0)
+        return TOKEN_WHILE;
+    if (strcmp(lexeme, "void") == 0)
+        return TOKEN_VOID;
+    return TOKEN_IDENTIFIER; // Default to IDENTIFIER if not a keyword
+}
+
 // Obtém o próximo token da entrada
 Token getNextToken(Lexer *lexer, DFA *dfa)
 {
@@ -96,6 +113,13 @@ Token getNextToken(Lexer *lexer, DFA *dfa)
     if (dfa->finalStates[state] != -1)
     {
         token.type = dfa->finalStates[state];
+
+        // Reserved Word Check (Fix)
+        if (token.type == TOKEN_IDENTIFIER)
+        {
+            token.type = checkReservedWord(lexeme);
+        }
+
         token.lexeme = lexeme; // Assign dynamically allocated lexeme to token
     }
     else
